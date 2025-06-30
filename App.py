@@ -9,11 +9,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. Load data with latest Streamlit cache
+# 2. Load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Influencer Roi.csv")
-    return df
+    return pd.read_csv("Influencer Roi.csv")
 
 df = load_data()
 
@@ -43,99 +42,80 @@ tab1, tab2 = st.tabs(["📊 Macro Analytics", "🔍 Micro Analytics"])
 with tab1:
     st.header("Overview Metrics")
 
-    st.markdown("**AdCred Score Distribution:** Shows how influencer credibility is spread across campaigns.")
-    fig1 = px.histogram(filtered, x="AdCred_Score", nbins=20)
-    st.plotly_chart(fig1, use_container_width=True)
+    st.markdown("**AdCred Score Distribution**")
+    st.plotly_chart(px.histogram(filtered, x="AdCred_Score", nbins=20), use_container_width=True)
 
-    st.markdown("**ROI Distribution:** Understand profitability spread across campaigns.")
-    fig2 = px.histogram(filtered, x="ROI", nbins=20)
-    st.plotly_chart(fig2, use_container_width=True)
+    st.markdown("**ROI Distribution**")
+    st.plotly_chart(px.histogram(filtered, x="ROI", nbins=20), use_container_width=True)
 
-    st.markdown("**Revenue by Week:** Spot seasonality or spikes over time.")
-    rev_week = filtered.groupby("Week")["Revenue"].sum().reset_index()
-    fig3 = px.line(rev_week, x="Week", y="Revenue", markers=True)
+    st.markdown("**Revenue by Week**")
+    fig3 = px.line(filtered.groupby("Week")["Revenue"].sum().reset_index(), x="Week", y="Revenue", markers=True)
     st.plotly_chart(fig3, use_container_width=True)
 
-    st.markdown("**Impressions vs Clicks:** More clicks per view indicates engagement.")
-    fig4 = px.scatter(filtered, x="Impressions", y="Clicks", trendline="ols")
+    st.markdown("**Impressions vs Clicks (Scatter Plot)**")
+    fig4 = px.scatter(filtered, x="Impressions", y="Clicks")
     st.plotly_chart(fig4, use_container_width=True)
 
-    st.markdown("**Avg Cart Value by Safety Bucket:** Transaction value by risk profile.")
+    st.markdown("**Avg Cart Value by Safety Bucket**")
     cart = filtered.groupby("Safety_Bucket")["Cart_Value_USD"].mean().reset_index()
-    fig5 = px.bar(cart, x="Safety_Bucket", y="Cart_Value_USD")
-    st.plotly_chart(fig5, use_container_width=True)
+    st.plotly_chart(px.bar(cart, x="Safety_Bucket", y="Cart_Value_USD"), use_container_width=True)
 
-    st.markdown("**Platform Share:** Which channels dominate your influencer mix.")
+    st.markdown("**Platform Share**")
     plat = filtered["Platform"].value_counts().reset_index()
     plat.columns = ["Platform", "Count"]
-    fig6 = px.pie(plat, names="Platform", values="Count")
-    st.plotly_chart(fig6, use_container_width=True)
+    st.plotly_chart(px.pie(plat, names="Platform", values="Count"), use_container_width=True)
 
-    st.markdown("**Correlation Matrix:** Find strong positive/negative relationships between features.")
+    st.markdown("**Correlation Matrix**")
     corr = filtered.select_dtypes("number").corr()
-    fig7 = px.imshow(corr, text_auto=True)
-    st.plotly_chart(fig7, use_container_width=True)
+    st.plotly_chart(px.imshow(corr, text_auto=True), use_container_width=True)
 
 with tab2:
     st.header("Detailed Insights")
 
-    st.markdown("**Conversion Funnel:** Drop-off from clicks → visits → downloads → purchases.")
+    st.markdown("**Conversion Funnel**")
     funnel = filtered[["Clicked","Visited_Landing","Downloaded_Offer","Purchased"]].sum().reset_index()
     funnel.columns = ["Stage","Count"]
-    fig8 = px.bar(funnel, x="Stage", y="Count")
-    st.plotly_chart(fig8, use_container_width=True)
+    st.plotly_chart(px.bar(funnel, x="Stage", y="Count"), use_container_width=True)
 
-    st.markdown("**AdCred vs ROI:** Does credibility drive better returns?")
-    fig9 = px.scatter(filtered, x="AdCred_Score", y="ROI", trendline="ols")
-    st.plotly_chart(fig9, use_container_width=True)
+    st.markdown("**AdCred vs ROI (Scatter Plot)**")
+    st.plotly_chart(px.scatter(filtered, x="AdCred_Score", y="ROI"), use_container_width=True)
 
-    st.markdown("**ROI by Platform:** Compare distributions across channels.")
-    fig10 = px.box(filtered, x="Platform", y="ROI")
-    st.plotly_chart(fig10, use_container_width=True)
+    st.markdown("**ROI by Platform (Box Plot)**")
+    st.plotly_chart(px.box(filtered, x="Platform", y="ROI"), use_container_width=True)
 
-    st.markdown("**Top 10 Influencers by Avg ROI:** Spot your highest performers.")
+    st.markdown("**Top 10 Influencers by Avg ROI**")
     top10 = filtered.groupby("Influencer_Name")["ROI"].mean().nlargest(10).reset_index()
-    fig11 = px.bar(top10, x="Influencer_Name", y="ROI")
-    st.plotly_chart(fig11, use_container_width=True)
+    st.plotly_chart(px.bar(top10, x="Influencer_Name", y="ROI"), use_container_width=True)
 
-    st.markdown("**Sentiment Score Distribution:** Gauge overall campaign tone.")
-    fig12 = px.histogram(filtered, x="Sentiment_Score", nbins=20)
-    st.plotly_chart(fig12, use_container_width=True)
+    st.markdown("**Sentiment Score Distribution**")
+    st.plotly_chart(px.histogram(filtered, x="Sentiment_Score", nbins=20), use_container_width=True)
 
-    st.markdown("**Fake Follower % vs ROI:** See if inauthenticity hurts ROI.")
-    fig13 = px.scatter(filtered, x="Fake_Follower_%", y="ROI", trendline="ols")
-    st.plotly_chart(fig13, use_container_width=True)
+    st.markdown("**Fake Follower % vs ROI (Scatter Plot)**")
+    st.plotly_chart(px.scatter(filtered, x="Fake_Follower_%", y="ROI"), use_container_width=True)
 
-    st.markdown("**Avg Brand Safety Rating by Platform:** Compare content safety.")
+    st.markdown("**Avg Brand Safety Rating by Platform**")
     bs = filtered.groupby("Platform")["Brand_Safety_Rating"].mean().reset_index()
-    fig14 = px.bar(bs, x="Platform", y="Brand_Safety_Rating")
-    st.plotly_chart(fig14, use_container_width=True)
+    st.plotly_chart(px.bar(bs, x="Platform", y="Brand_Safety_Rating"), use_container_width=True)
 
-    st.markdown("**AdCred Score by Platform:** Credibility variance per channel.")
-    fig15 = px.box(filtered, x="Platform", y="AdCred_Score")
-    st.plotly_chart(fig15, use_container_width=True)
+    st.markdown("**AdCred Score by Platform**")
+    st.plotly_chart(px.box(filtered, x="Platform", y="AdCred_Score"), use_container_width=True)
 
-    st.markdown("**Avg Story View Rate by Platform:** Which channel has best engagement?")
+    st.markdown("**Avg Story View Rate by Platform**")
     sv = filtered.groupby("Platform")["Story_View_Rate_%"].mean().reset_index()
-    fig16 = px.bar(sv, x="Platform", y="Story_View_Rate_%")
-    st.plotly_chart(fig16, use_container_width=True)
+    st.plotly_chart(px.bar(sv, x="Platform", y="Story_View_Rate_%"), use_container_width=True)
 
-    st.markdown("**Content Match vs AdCred:** On-brand content → credibility?")
-    fig17 = px.scatter(filtered, x="Content_Match_Score", y="AdCred_Score")
-    st.plotly_chart(fig17, use_container_width=True)
+    st.markdown("**Content Match Score vs AdCred (Scatter Plot)**")
+    st.plotly_chart(px.scatter(filtered, x="Content_Match_Score", y="AdCred_Score"), use_container_width=True)
 
-    st.markdown("**Avg Posting Frequency by Platform:** Posting cadence across channels.")
+    st.markdown("**Avg Posting Frequency by Platform**")
     pf = filtered.groupby("Platform")["Posting_Frequency"].mean().reset_index()
-    fig18 = px.bar(pf, x="Platform", y="Posting_Frequency")
-    st.plotly_chart(fig18, use_container_width=True)
+    st.plotly_chart(px.bar(pf, x="Platform", y="Posting_Frequency"), use_container_width=True)
 
-    st.markdown("**Would Rehire?:** Influencer satisfaction post-campaign.")
+    st.markdown("**Would Rehire?**")
     reh = filtered["Would_Rehire"].value_counts(normalize=True).reset_index()
     reh.columns = ["Would_Rehire", "Proportion"]
-    fig19 = px.pie(reh, names="Would_Rehire", values="Proportion")
-    st.plotly_chart(fig19, use_container_width=True)
+    st.plotly_chart(px.pie(reh, names="Would_Rehire", values="Proportion"), use_container_width=True)
 
-    st.markdown("**Conversions by Week:** Campaign efficiency over time.")
+    st.markdown("**Conversions by Week**")
     conv = filtered.groupby("Week")["Conversions"].sum().reset_index()
-    fig20 = px.line(conv, x="Week", y="Conversions", markers=True)
-    st.plotly_chart(fig20, use_container_width=True)
+    st.plotly_chart(px.line(conv, x="Week", y="Conversions", markers=True), use_container_width=True)
